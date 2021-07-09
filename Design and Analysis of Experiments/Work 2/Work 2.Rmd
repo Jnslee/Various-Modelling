@@ -1,0 +1,161 @@
+
+
+---
+title: "PART 2 - My Factorial Experiment"
+author: "Jonas"
+date: "06/04/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### DESCRIPTION OF THE DESIGN:
+
+
+For this experiment, I thought that it would be interesting to see at what angles, two objects slide down two different surface types. In particular, I wanted to learn how an arbitrary (as far as I know, fair) 25 cents Canadian coin and a standard white eraser’s elevation differ between two different surfaces types and how an external force (i.e. pushing) acting on the object also affects the differences in elevation at to which they slide.
+
+First I decided that this needed to be an unreplicated factorial design. Next, I decided that the first surface type would be an Amazon cardboard box container. The second surface type would be my softcover textbook required for the fall 2019, PHL265H1S class(i.e. $Leviathan$ $Parts$ $I$ $and$ $II$, Revised Edition by Thomas Hobbes, edited by A.P. Martinich and Brian Battiste).
+
+Next, I used duct tape to tape up the cardboard box again in order to ensure that the surface was flush and that there would be no uneven spots on the box. The cardboard box was then placed on a desk and put up against the wall, and a protractor was placed at the edge of the cardboard box and the table. The coin was placed on the box on the opposite side of the protractor and was held with my finger. Then I removed the finger on top of the coin, and started to tip the box slowly, ensuring adequate time was given every time I tilted the box up by a degree to ensure I got the correct angle at which the coin would slide. When it reached the angle at which it slid, I documented it, and then proceeded to do the same thing with the white eraser and the cardboard box. After this was done and documented, I used the same method and proceeded to do the same thing with the coin and eraser except on the textbook instead.
+
+The data I obtained from the results of my experiment are laid out as follows:
+
+SUrface type  | Object | Pushed or Not | Angle of Inclination when it slid (in degrees)
+------------- | ------ | ------------- | ----------------------------------------------
+Cardboard Box | Eraser |   Pushed      |      28
+Cardboard Box | Eraser |  Not Pushed   |      36
+Cardboard Box | Coin   |   Pushed      |      6
+Cardboard Box | Coin   |  Not Pushed   |      10
+Textbook      | Eraser |   Pushed      |      30
+Textbook      | Eraser |  Not Pushed   |      40
+Textbook      | Coin   |   Pushed      |      8
+Textbook      | Coin   |  Not Pushed   |      10
+
+## Analysis of the data
+
+
+Surface          |   Object    |      Effect of changing it from pushed to not
+-------          |   ------    |      -----------------------------------------  
+cardboard box    |   coin      |         10 - 6 = 4
+cardboard box    |   eraser    |         36 - 28 = 8
+textbook         |   coin      |         10 - 8 = 2
+textbook         |   eraser    |         40 - 30 = 10
+
+MAIN (AVERAGE) EFFECT OF THE OBJECT BEING PUSHED IS: ((4 + 8 + 2 + 10) / 4) = 6
+
+
+Object      |   Pushed     |   Effect of changing surface from cardboard to textbook
+------      |   ------     |   -----------------------------------------------------
+coin        |   Yes        |    8-6 = 2
+eraser      |   YES        |    30-28 = 2
+coin        |   NO         |    10-10-10 = 0
+eraser      |   NO         |    40-36 = 4
+
+MAIN (AVERAGE) EFFECT OF SURFACE IS: ((4 + 2 + 2 + 0) / 4) = 8/4 = 2
+
+
+Surface        | Pushed    |    Effect of changing object from coin to eraser
+-------        | ------    |    ---------------------------------------------
+Cardboard box  | YES       |     28 - 6 = 22
+CARDBOARD BOX  | NO        |     36 - 10 = 26
+TEXTBOOK       | YES       |     30 - 8 = 22
+TEXTBOOK       | NO        |     40 - 10 = 30
+
+
+MAIN (AVERAGE) EFFECT OF THE OBJECT IS:  ((22 + 26 + 22 + 30) / 4) = 25
+
+
+The confidence interval for the surface type (2 decimals) is: [-1.23, 5.23]
+
+The confidence interval for the object type (2 decimals) is: [21.77, 28.23]
+
+The confidence interval for the change in going from pushed to not is: [2.77, 9.23]
+
+```{r echo=FALSE, tidy=TRUE, warning=FALSE, message=FALSE}
+surface <- c("cardboard box", "cardboard box", "cardboard box", "cardboard box", "Textbook", "Textbook", "Textbook", "Textbook")
+object <- c("coin", "coin", "eraser", "eraser", "coin", "coin", "eraser", "eraser")
+pushed <- c("yes", "no", "yes", "no", "yes", "no", "yes", "no")
+angle <- c(6, 10, 28, 36, 8, 10, 30, 40)
+data_frame_1 <- data.frame(surface, object, pushed, angle)
+
+#PLOTTING INTERACTIONS:
+
+interaction.plot(data_frame_1$surface,data_frame_1$object,data_frame_1$angle, type="l", xlab="Surface Type",trace.label="", ylab="Mean Angle")
+
+interaction.plot(data_frame_1$surface,data_frame_1$pushed,data_frame_1$angle, type="l", xlab="",trace.label="", ylab="Mean Angle")
+
+interaction.plot(data_frame_1$object,data_frame_1$pushed,data_frame_1$angle, type="l", xlab="",trace.label="", ylab="Mean Angle")
+```
+
+
+
+
+
+```{r echo=FALSE, tidy=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+library(FrF2)
+regression_1 <- lm(angle~surface*object*pushed,data=data_frame_1)
+DanielPlot(regression_1,half=FALSE,autolab=F, main="Normal plot of effects on elevation study")
+```
+
+```{r echo=FALSE, tidy=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+round(2*regression_1$coefficients,2)
+```
+
+```{r echo=FALSE, tidy=TRUE, warning=FALSE, message=FALSE}
+library(FrF2)
+regression_1 <- lm(angle~surface*object*pushed,data=data_frame_1)
+DanielPlot(regression_1,half=TRUE,autolab=F, main="Half normal plot of effects on elevation study")
+```
+
+
+```{r echo=FALSE, tidy=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+
+# The estimated factorial effects are:
+
+eff <- 2*regression_1$coefficients
+round(eff,2)
+
+#The estimate of s0=1.5⋅median∣∣θ^i∣∣ is:
+
+s0 <- 1.5*median(abs(eff))
+s0
+
+#The trimming constant 2.5s0 is:
+
+2.5*s0
+
+
+abs(eff)<2.5*s0
+
+#The PSE is then calculated as 1.5 times the median of these values.:
+
+PSE <- 1.5*median(abs(eff[abs(eff)<2.5*s0]))
+PSE
+
+#The ME and SME are:
+ME <- PSE*qt(p = .975,df = (8-1)/3)
+ME
+
+#95% CI FOR THE EFFECTS ARE:
+lower <- round(eff-ME,2)
+upper <- round(eff+ME,2)
+knitr::kable(cbind(eff,lower,upper))
+```
+
+
+```{r echo=FALSE, tidy=TRUE, warning=FALSE, message=FALSE}
+library(BsMD)
+LenthPlot(regression_1,cex.fac = 0.45)
+```
+
+## Conclusions
+
+
+From the Main Effects calculations it can be seen that none these effects can be easily explained by chance because all of these effects are atleast 2-3 times their standard error. This is further substaintated by the interaction plots, although the interaction plot with respect to the angle of elevation and the object type are quite close and further analysis could be done on it.
+
+
+From the normal and half normal plots it can be seen that there is an influentional point (i.e. the factor the object). This tells us that the object type is an important factor. Looking at the remaining factors in the normal and half normal plot it can be seen that they approximately follow a straight line and hence can be thought of as all these estimated effects having the same distribution (i.e. the same mean). 
+
+From the lenth plot it can be seen that the only truly siginificant factor is when the surface type is the $Leviathan$ $Parts$ $I$ $and$ $II$, Revised Edition by Thomas Hobbes, edited by A.P. Martinich and Brian Battiste
