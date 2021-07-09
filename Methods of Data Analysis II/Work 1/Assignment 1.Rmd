@@ -1,0 +1,237 @@
+---
+title: "A1 for STA303"
+author: "Jonas"
+date: "19/07/2020"
+output: pdf_document
+---
+
+# STA303 Assignment 1
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+3.
+
+(a) 
+
+```{r}
+#Wald Confidence Interval:
+true_pi <- 0.9
+n <- 30
+alpha <- 0.05
+y <- 27
+pi_hat <- (y/n)
+Lower_wald <- pi_hat - qnorm(1-alpha/2)*sqrt((pi_hat*(1-pi_hat))/n)
+Upper_wald <- pi_hat + qnorm(1-alpha/2)*sqrt((pi_hat*(1-pi_hat))/n)
+pi_in_wald_CI <- (true_pi > Lower_wald)*(true_pi < Upper_wald)
+combined_wald_CI <- cbind(Lower_wald, Upper_wald)
+combined_wald_CI
+
+
+#Score Confidence Interval:
+n_prime <- n + (qnorm(1-alpha/2))^2
+w_1 <- n/n_prime
+w_2 <- ((qnorm(1-alpha/2))^2)/n_prime
+midpoint <- pi_hat*w_1+0.5*w_2
+Lower_score <- midpoint - qnorm(1-alpha/2)*sqrt((1/n_prime)*(pi_hat*(1-pi_hat)*w_1+0.25*w_2))
+Upper_score <- midpoint + qnorm(1-alpha/2)*sqrt((1/n_prime)*(pi_hat*(1-pi_hat)*w_1+0.25*w_2))
+combined_score_CI <- cbind(Lower_score, Upper_score)
+combined_score_CI
+```
+
+
+
+(b) 
+
+```{r}
+set.seed(1000869839)
+#WALD Confidence Interval:
+#1000 Wald Confidence Intervals:
+true_pi_2 <- 0.9
+n <- 30
+alpha <- 0.05
+N <- 100000
+y <- rbinom(N, n, true_pi_2)
+pi_hat_2 <- (y/n)
+Lower_wald_2 <- pi_hat_2 - qnorm(1-alpha/2)*sqrt((pi_hat_2*(1-pi_hat_2))/n)
+Upper_wald_2 <- pi_hat_2 + qnorm(1-alpha/2)*sqrt((pi_hat_2*(1-pi_hat_2))/n)
+combined_wald_CI_2 <- cbind(Lower_wald_2, Upper_wald_2)
+#combined_wald_CI_2 (run it to get all the wald confidence intervals)
+
+#Proportion of Wald Confidence Intervals that contain the true value of $\pi$
+pi_in_wald_CI <- (true_pi_2 > Lower_wald_2)*(true_pi_2 < Upper_wald_2)
+observedConfLevel_Wald_CI <- mean(pi_in_wald_CI)
+observedConfLevel_Wald_CI
+
+
+
+#SCORE Confidence Interval:
+n_prime_2 <- n + (qnorm(1-alpha/2))^2
+w1 <- n/n_prime_2
+w2 <- ((qnorm(1-alpha/2))^2)/n_prime_2
+midpoint <- pi_hat_2*w1+0.5*w2
+Lower_score_2 <- midpoint - qnorm(1-alpha/2)*sqrt((1/n_prime_2)*(pi_hat_2*(1-pi_hat_2)*w1+0.25*w2))
+Upper_score_2 <- midpoint + qnorm(1-alpha/2)*sqrt((1/n_prime_2)*(pi_hat_2*(1-pi_hat_2)*w1+0.25*w2))
+combined_score_CI <- cbind(Lower_score_2, Upper_score_2)
+
+
+#Proportion of Score Confidence Intervals that contain 0.9
+pi_in_score_CI <- (true_pi_2 >  Lower_score_2)*(true_pi_2 <  Upper_score_2)
+observedConfLevel_scoreCI <- mean(pi_in_score_CI)
+observedConfLevel_scoreCI
+```
+
+Since the proportion of wald confidence intervals that contain 0.9 is 0.97405, that means that there is an approximately 97.40% chance that a Wald Confidence interval contains the true $\pi$ (i.e. 0.9)
+
+Since the proportion of score confidence intervals that contain 0.9 is 0.8094 that means that there is an approximately 80.94% chance a score confidence intervals contains the true $\pi$ (i.e. 0.9)
+
+Since the proportion of the Wald confidence intervals that contain 0.9 is higher than the proportion of Score intervals that contain 0.9, I feel that the Wald confidence intervals is more reliable.
+
+
+
+4. 
+
+(a)
+
+RECALL:
+
+likelihood function = ($n\choose y$)($\pi$$^{y}$)((1-$\pi$)$^{n-y}$)
+&
+log-likelihood function = (ln($n\choose y$)) + yln($\pi$) + (n-y)(ln(1-$\pi$))
+
+
+
+likelihood function = $30\choose 27$$\pi$$^{27}$((1-$\pi$)$^{30-27}$)
+&
+log-likelihood function = ln$30\choose 27$ + 27ln($\pi$) + 3(ln(1-$\pi$))
+
+
+
+(b)
+
+```{r}
+
+#Plot of l($\pi$)
+par(mfrow = c(1,2))
+## Using Likelihood ##
+   likelihood <- function(pi) { (pi^27)*((1-pi)^3) }
+   opt.lik <- optimize(likelihood, interval=c(0, 1), maximum=TRUE)
+   curve(likelihood, from=0, to=1, xlab=expression(pi), ylab=expression(l(pi)))
+   abline(v = opt.lik$maximum)
+   text(opt.lik$maximum + 0.05, 0.0014, label = round(opt.lik$maximum, 4))
+
+
+   
+## Using log-loikelihood ##      
+   log_likelihood <- function(pi) { 27*log(pi) + 3*log(1-pi) }
+   curve(log_likelihood, from=0, to=1, xlab=expression(pi), ylab=expression(L(pi)))
+   opt.log_lik <- optimize(log_likelihood, interval=c(0, 1), maximum=TRUE)
+   abline(v = opt.log_lik$maximum)
+   text(opt.log_lik$maximum + 0.05, -15, label = round(opt.lik$maximum, 4))
+   dev.off()
+```
+The maximum likelihood estimate of $\pi$ is 0.9.
+
+(c) 
+
+```{r}
+```
+
+
+(d)
+
+```{r}
+library(rootSolve)
+n <- 30
+y <- 27
+p_hat <- y/n
+alpha_3 <- 0.05
+f1 <- function(pi0) {
+   -2*(y*log(pi0) + (n-y)*log(1-pi0)-y*log(p_hat)
+       -(n-y)*log(1-p_hat)) - qchisq(1-alpha_3,df=1)
+}
+uniroot.all(f=f1, interval=c(0.000001,0.999999))
+pdf("uniroot.pdf")
+par(oma = c(1,1,0,1), bty = "n")
+curve(f1, from=0, to=1, xlab=expression(pi[0]), 
+      ylab=expression(paste("-2log(" ) ~ Lambda ~ paste( ") - ") ~ chi[1]^2 ~ 
+                         paste( "(" )   ~ alpha ~ paste( ")" ) ))
+abline(h=0, col="red")
+dev.off()
+```
+
+
+
+
+5.
+(a) 
+
+```{r}
+set.seed(1000869839)
+n <- 500
+#Generating 500 random Uniform values
+X_1 <- runif(n, min=-10, max=10)
+#Generating 500 random Normal values
+X_2 <- rnorm(n, mean=0, sd=4)
+#Generating 500 random Bernoulli values
+X_3 <- rbinom(n, 1, 0.7)
+
+#Simulating Poisson:
+Xmat <- cbind(rep(1,n), X_1, X_2, X_3) 
+beta_0 <- 0.8
+beta_1 <- 0.1
+beta_2 <- 0.2
+beta_3 <- 0.3
+eta <- beta_0 + (beta_1 * X_1) + (beta_2 * X_2) + (beta_3 * X_3)
+Y<-rpois(n, lambda = exp(eta))
+Y
+```
+
+
+(b) Estimate the $\beta$$s$ using Iteratively Weighted Least Square (IRLS) method by writing your
+own function. Explain the procedure and state the W matrix as mentioned in lecture 4.
+Compare the results with glm code in R
+
+```{r}
+#Initializing:
+glm_utsc_2 <- function(Y, Xmat, tol = 1e-8){
+  beta <-c(log(mean(y)),0,0,0)
+  eta <- Xmat %*% beta
+  W = diag(c(exp(eta)))
+  Z <- eta + exp(-eta)*(Y-exp(eta))
+  eqns<-sum(t(Xmat) %*% (Y-exp(eta)))
+  istep <- 0
+
+  
+ # Setting theta for the algorithm 
+    
+  while(eqns^2 > tol){
+    beta<-solve(t(Xmat) %*% W %*% Xmat) %*% t(Xmat) %*% W %*% Z
+    eta <- Xmat %*% beta
+    Z <- eta + exp(-eta)*(Y-exp(eta))
+    W=diag(c(exp(eta)))
+    eqns<-sum(t(Xmat) %*% (Y-exp(eta)))
+    istep <- istep +1
+  }
+  
+  SE <- sqrt(diag(solve(t(Xmat) %*% W %*% Xmat)))
+  z  = beta/SE
+  res.mat <- data.frame(Estimates = beta, OR = c(1, exp(beta)[-1]),
+                        SE = SE,
+                        z  = z,
+                        p_value = ifelse(z < 0, 2*pnorm(z), 2*(1 - pnorm(z)))
+  )
+  rownames(res.mat)[1] <- "Intercept"
+  results <- list(Table = res.mat, Iteration = istep)
+  return(results)
+}
+#Summary of the Poisson Distribution GLM:
+final_glm <-glm(Y ~ X_1 + X_2 + X_3,family=poisson)
+summary(final_glm)
+```
+
+The IRLS procedure is a complicated procedure but how it works is as follow. The IRLS is an iterative algorithm whose goal is to have it convergence and in order to do so a value to which it converges needs to be decided upon (in this case it is 1e-8). Then the eta, beta and W are calculated, where W is the diagonal values of the exponential of the eta matrix (and eta is the matrix multiplication of the x matrix and beta). Then the algorithm runs to minimize the value. If the value does not converge then the process repeats again and continues to repeat until it converges onto our value. Once it does so, we obtain our optimal glm model. Essentially this procedure is an iterative algorithm with iterative weighting that approximately follows the weighted least squares procedure from STA302 in order for it to converge to the optimal approximation.
+
+The Betas between my code and the code provided in lecture 4 are quite different. Additionally, the AIC between my code and the code provided is very different as well. Finally all my covariates have small enough p values to make them statistically different, whereas in the code from lecture 4, the covariate X2 is not statistically significant
